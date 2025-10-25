@@ -1,0 +1,22 @@
+---
+server:
+  port: 8081
+  read_timeout: 30
+  write_timeout: 1800
+common:
+  tokens_file: tokens.json
+models:
+  - name: deepseek-chat
+    max_context_tokens: 128000
+    max_output_tokens: 64000
+    otps: 50
+    ttft:
+      min: 500
+      max: 1000
+  - name: qwen2.5-coder-14b
+    max_context_tokens: 8192
+    max_output_tokens: 8192
+    otps: 80
+    ttft:
+      min: 500
+      max: 1500
