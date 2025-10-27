@@ -71,6 +71,10 @@ func ChatHandler(c *gin.Context) {
 
 	maxTokens = min(maxTokens, modelConfig.MaxContextTokens-promptTokens)
 
+	if maxTokens <= 0 {
+		maxTokens = 50
+	}
+
 	choices := GetTokens(promptTokens, maxTokens)
 
 	mockRequest := MockRequest{

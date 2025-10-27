@@ -10,6 +10,5 @@ curl --request POST \
       "role": "user",
       "content": "What opportunities and challenges will the Chinese large model industry face in 2025?"
     }
-  ],
-  "max_tokens": 1000
+  ]
 }'
