@@ -38,6 +38,10 @@ func CountTokens(content string) int {
 	return len(ids)
 }
 
+func CountTokensFast(content string) int {
+	return int(float64(len(content)) / 3.75)
+}
+
 func GetTokens(offset int, count int) *[]Token {
 
 	offset = offset % len(*tokens)

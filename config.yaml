@@ -1,8 +1,10 @@
 ---
 server:
-  port: 8081
+  port: 9998
   read_timeout: 30
   write_timeout: 1800
+  pprof_port: 6070
+  pprof_enabled: true
 common:
   tokens_file: tokens.json
 models:
@@ -13,6 +15,13 @@ models:
     ttft:
       min: 500
       max: 1000
+  - name: deepseek-reasoner
+    max_context_tokens: 128000
+    max_output_tokens: 8192
+    otps: 60
+    ttft:
+      min: 500
+      max: 2000
   - name: qwen2.5-coder-14b
     max_context_tokens: 8192
     max_output_tokens: 8192

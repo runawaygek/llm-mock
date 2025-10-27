@@ -3,12 +3,12 @@ package internal
 import (
 	"net/http"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
 var requestDecoder = sonic.ConfigFastest
@@ -22,8 +22,10 @@ type MockRequest struct {
 	Choices      *[]Token
 }
 
-func ErrorResponse(w *http.ResponseWriter, err error) {
-}
+var (
+	HandlerEnterCount  atomic.Uint64
+	HandlerActiveCount atomic.Int64
+)
 
 func ModelsHandler(c *gin.Context) {
 	models := make([]string, 0, len(AppConfig.ModelMap))
@@ -34,6 +36,13 @@ func ModelsHandler(c *gin.Context) {
 }
 
 func ChatHandler(c *gin.Context) {
+
+	if AppConfig.Server.PprofEnabled {
+		HandlerEnterCount.Add(1)
+		HandlerActiveCount.Add(1)
+		defer HandlerActiveCount.Add(-1)
+	}
+
 	req_id := uuid.New().String()
 	start := time.Now()
 	var request ChatRequest
@@ -54,7 +63,7 @@ func ChatHandler(c *gin.Context) {
 		prompt.WriteString(message.Content)
 	}
 
-	promptTokens := CountTokens(prompt.String())
+	promptTokens := CountTokensFast(prompt.String())
 	if promptTokens > modelConfig.MaxContextTokens {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Prompt tokens exceed max context tokens"})
 		return
@@ -109,48 +118,58 @@ func handleStreamChat(c *gin.Context, mockRequest *MockRequest) {
 	c.Writer.Header().Set("Transfer-Encoding", "chunked")
 
 	ttft := mockRequest.modelConfig.TTFT.GetTTFT()
+	time.Sleep(time.Duration(ttft) * time.Millisecond)
+
 	tpot_ms := 1000 / (mockRequest.modelConfig.OTPS + 1)
 	tpot := time.Duration(tpot_ms) * time.Millisecond
 
-	Logger.Info("Stream chat",
-		zap.Int("ttft", ttft),
-		zap.Duration("tpot", tpot),
-		zap.Int("outputTokens", mockRequest.OutputTokens))
-
 	first := true
-	totalTokens := mockRequest.PromptTokens
+	completionTokens := 0
 	for _, choice := range *mockRequest.Choices {
 		if !first {
 			time.Sleep(tpot)
 		}
 		first = false
-		totalTokens += choice.Tokens
-		b, err := MarshalChunk(mockRequest.ReqID,
+		completionTokens += choice.Tokens
+		chunk, err := MarshalChunk(
+			mockRequest.ReqID,
 			time.Now(),
 			mockRequest.modelConfig.Name,
 			choice.Content,
 			mockRequest.PromptTokens,
-			choice.Tokens,
-			totalTokens,
+			completionTokens,
+			completionTokens+mockRequest.PromptTokens,
 		)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		c.Writer.Write([]byte("data: " + string(*b) + "\n\n"))
+		c.Writer.Write([]byte("data: "))
+		c.Writer.Write(*chunk)
+		c.Writer.Write([]byte("\n\n"))
 		c.Writer.Flush()
 	}
 
-	lastChunk, err := MarshalChunk(mockRequest.ReqID, time.Now(), mockRequest.modelConfig.Name, "",
-		mockRequest.PromptTokens, 0, totalTokens)
+	lastChunk, err := MarshalChunk(
+		mockRequest.ReqID,
+		time.Now(),
+		mockRequest.modelConfig.Name,
+		"",
+		mockRequest.PromptTokens,
+		completionTokens,
+		completionTokens+mockRequest.PromptTokens,
+	)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.Writer.Write([]byte("data: " + string(*lastChunk) + "\n\n"))
+	c.Writer.Write([]byte("data: "))
+	c.Writer.Write(*lastChunk)
+	c.Writer.Write([]byte("\n\n"))
+
 	c.Writer.Write([]byte("data: [DONE]\n\n"))
 	c.Writer.Flush()
 }

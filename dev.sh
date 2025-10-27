@@ -186,7 +186,7 @@ logs() {
     print_info "查看日志文件: $LOG_FILE"
     print_info "按 Ctrl+C 退出日志查看"
     echo "----------------------------------------"
-    tail -f "$LOG_FILE"
+    tail -n 100 -f "$LOG_FILE"
 }
 
 # 显示状态

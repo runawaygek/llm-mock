@@ -2,15 +2,18 @@ package internal
 
 import (
 	"math/rand"
+
 	"os"
 
 	yaml "gopkg.in/yaml.v3"
 )
 
 type ServerConfig struct {
-	Port         int `yaml:"port"`
-	ReadTimeout  int `yaml:"read_timeout"`
-	WriteTimeout int `yaml:"write_timeout"`
+	Port         int  `yaml:"port"`
+	ReadTimeout  int  `yaml:"read_timeout"`
+	WriteTimeout int  `yaml:"write_timeout"`
+	PprofPort    int  `yaml:"pprof_port"`
+	PprofEnabled bool `yaml:"pprof_enabled"`
 }
 
 type TTFTConfig struct {
@@ -31,10 +34,11 @@ type CommonConfig struct {
 }
 
 type Config struct {
-	Server   ServerConfig  `yaml:"server"`
-	Common   CommonConfig  `yaml:"common"`
-	Models   []ModelConfig `yaml:"models"`
-	ModelMap map[string]ModelConfig
+	Server ServerConfig  `yaml:"server"`
+	Common CommonConfig  `yaml:"common"`
+	Models []ModelConfig `yaml:"models"`
+
+	ModelMap map[string]ModelConfig `yaml:"-"`
 }
 
 func (c *TTFTConfig) GetTTFT() int {

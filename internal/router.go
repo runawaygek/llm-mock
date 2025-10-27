@@ -1,13 +1,33 @@
 package internal
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/gin-gonic/gin"
 )
+
+func ErrorLogger(c *gin.Context) {
+	start := time.Now()
+	c.Next()
+	latency := time.Since(start)
+	statusCode := c.Writer.Status()
+	clientIP := c.ClientIP()
+	method := c.Request.Method
+	path := c.Request.URL.Path
+
+	if statusCode != 200 {
+		errMsg := fmt.Sprintf("gin: %d | %s | %s | %s | %s ", statusCode, latency, clientIP, method, path)
+		GinLogger.Error(errMsg)
+	}
+}
 
 func NewServer() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 
-	engine := gin.Default()
+	engine := gin.New()
+	engine.Use(gin.Recovery())
+	engine.Use(ErrorLogger)
 
 	v1Group := engine.Group("/v1")
 	{

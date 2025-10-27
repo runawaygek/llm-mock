@@ -1,5 +1,5 @@
 curl --request POST \
-  --url http://localhost:8081/v1/chat/completions \
+  --url http://localhost:9998/v1/chat/completions \
   --header 'Authorization: Bearer sk-wbmgnbvoaqmzmxswzanviiawjakoaatdbmvphcawsmravuif' \
   --header 'Content-Type: application/json' \
   --data '{

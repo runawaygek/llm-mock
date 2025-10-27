@@ -10,9 +10,11 @@ import (
 )
 
 var Logger *zap.Logger
+var GinLogger *zap.Logger
 
 func InitLogger(lvl zapcore.Level) {
-	Logger = NewLogger(lvl)
+	Logger = NewLogger(lvl).WithOptions(zap.AddCaller())
+	GinLogger = NewLogger(lvl)
 }
 
 func NewLogger(lvl zapcore.Level) *zap.Logger {
@@ -32,5 +34,5 @@ func NewLogger(lvl zapcore.Level) *zap.Logger {
 		zap.NewAtomicLevelAt(lvl),
 	)
 
-	return zap.New(core, zap.AddCaller())
+	return zap.New(core)
 }
