@@ -5,7 +5,7 @@
 
 set -e
 
-ulimit -n 65536
+ulimit -n 65535
 
 # 配置
 BINARY_PATH="/tmp/llm-mock"

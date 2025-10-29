@@ -1,8 +1,10 @@
 package internal
 
+import "encoding/json"
+
 type Message struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
+	Role    string          `json:"role"`
+	Content json.RawMessage `json:"content"`
 }
 
 type ChatRequest struct {

@@ -60,7 +60,7 @@ func ChatHandler(c *gin.Context) {
 
 	prompt := strings.Builder{}
 	for _, message := range request.Messages {
-		prompt.WriteString(message.Content)
+		prompt.Write(message.Content)
 	}
 
 	promptTokens := CountTokensFast(prompt.String())

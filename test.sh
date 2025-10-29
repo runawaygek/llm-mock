@@ -8,7 +8,12 @@ curl --request POST \
   "messages": [
     {
       "role": "user",
-      "content": "What opportunities and challenges will the Chinese large model industry face in 2025?"
+      "content": [
+        {
+          "type": "text",
+          "text": "What opportunities and challenges will the Chinese large model industry face in 2025?"
+        }
+      ]
     }
   ]
 }'
