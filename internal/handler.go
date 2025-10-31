@@ -99,8 +99,16 @@ func handleNormalChat(c *gin.Context, mockRequest *MockRequest) {
 	ttft := mockRequest.modelConfig.TTFT.GetTTFT()
 	time.Sleep(time.Duration(ttft) * time.Millisecond)
 
+	tpot_ms := 1000 / (mockRequest.modelConfig.OTPS + 1)
+	tpot := time.Duration(tpot_ms) * time.Millisecond
+
 	content := strings.Builder{}
+	first := true
 	for _, choice := range *mockRequest.Choices {
+		if !first {
+			time.Sleep(tpot)
+		}
+		first = false
 		content.WriteString(choice.Content)
 	}
 
