@@ -2,16 +2,16 @@ package internal
 
 import "encoding/json"
 
-type Message struct {
+type RequestMessage struct {
 	Role    string          `json:"role"`
 	Content json.RawMessage `json:"content"`
 }
 
 type ChatRequest struct {
-	Model     string    `json:"model"`
-	Messages  []Message `json:"messages"`
-	MaxTokens int       `json:"max_tokens"`
-	Stream    bool      `json:"stream"`
+	Model     string           `json:"model"`
+	Messages  []RequestMessage `json:"messages"`
+	MaxTokens int              `json:"max_tokens"`
+	Stream    bool             `json:"stream"`
 }
 
 type Delta struct {
@@ -38,10 +38,14 @@ type Chunk struct {
 	Usage   Usage    `json:"usage"`
 }
 
+type ResponseMessage struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
 type CompletionChoice struct {
-	Index        int     `json:"index"`
-	Message      Message `json:"message"`
-	FinishReason *string `json:"finish_reason"` // 流式时通常为 null
+	Index        int             `json:"index"`
+	Message      ResponseMessage `json:"message"`
+	FinishReason *string         `json:"finish_reason"` // 流式时通常为 null
 }
 
 type Completion struct {

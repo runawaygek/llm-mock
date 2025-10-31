@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"encoding/json"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -51,9 +50,9 @@ func MarshalCompletion(id string, created time.Time, model string, content strin
 		Model:   model,
 		Choices: []CompletionChoice{{
 			Index: 0,
-			Message: Message{
+			Message: ResponseMessage{
 				Role:    "assistant",
-				Content: json.RawMessage(content),
+				Content: content,
 			},
 			FinishReason: nil,
 		}},
